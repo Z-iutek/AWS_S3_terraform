@@ -22,7 +22,14 @@ jobs:
     - name: Install Localstack
       run: |
         pip install localstack
-        nohup localstack start &
+        nohup localstack start -d
+
+    - name: Wait for Localstack to start
+      run: |
+        while ! curl -s http://localhost:4566/health | grep "\"s3\": \"running\""; do
+          echo "Waiting for Localstack to be ready..."
+          sleep 5
+        done
 
     - name: Terraform Init
       run: terraform init
