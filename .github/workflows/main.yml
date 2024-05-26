@@ -10,6 +10,16 @@ jobs:
     name: 'Terraform'
     runs-on: ubuntu-latest
 
+    services:
+      localstack:
+        image: localstack/localstack
+        ports:
+          - 4566:4566
+        options: >-
+          --entrypoint=""
+          -e SERVICES=s3
+          -e DEFAULT_REGION=us-east-1
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -19,14 +29,9 @@ jobs:
       with:
         terraform_wrapper: false
 
-    - name: Install Localstack
+    - name: Wait for Localstack to be ready
       run: |
-        pip install localstack
-        nohup localstack start -d
-
-    - name: Wait for Localstack to start
-      run: |
-        while ! curl -s http://localhost:4566/health | grep "\"s3\": \"running\""; do
+        until curl -s http://localhost:4566/health | grep "\"s3\": \"running\""; do
           echo "Waiting for Localstack to be ready..."
           sleep 5
         done
@@ -39,3 +44,5 @@ jobs:
       env:
         AWS_ACCESS_KEY_ID: "mock_access_key"
         AWS_SECRET_ACCESS_KEY: "mock_secret_key"
+        AWS_DEFAULT_REGION: "us-east-1"
+        AWS_ENDPOINT_URL: "http://localhost:4566"

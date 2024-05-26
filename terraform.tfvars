@@ -1,1 +1,1 @@
-bucket_name = "AWS S3 Bucket"
+bucket_name = "mytestbucket123"
