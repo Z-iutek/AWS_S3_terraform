@@ -1,20 +1,16 @@
-name: Terraform CI
+name: Terraform
 
 on:
   push:
     branches:
-      - main
+      - master
+  pull_request:
+    branches:
+      - master
 
 jobs:
   terraform:
-    name: 'Terraform'
     runs-on: ubuntu-latest
-
-    services:
-      localstack:
-        image: localstack/localstack
-        ports:
-          - 4566:4566
 
     steps:
     - name: Checkout code
@@ -25,19 +21,20 @@ jobs:
       with:
         terraform_wrapper: false
 
-    - name: Wait for Localstack to be ready
-      run: |
-        until curl -s http://localhost:4566/health | grep "\"s3\": \"running\""; do
-          echo "Waiting for Localstack to be ready..."
-          sleep 5
-        done
+    - name: Install Localstack CLI
+      run: pip install localstack
+
+    - name: Start Localstack
+      run: localstack start -d
 
     - name: Terraform Init
       run: terraform init
 
     - name: Terraform Apply
       run: terraform apply -auto-approve
-      env:
-        AWS_ACCESS_KEY_ID: "mock_access_key"
-        AWS_SECRET_ACCESS_KEY: "mock_secret_key"
-        AWS_DEFAULT_REGION: "us-east-1"
+
+    - name: Terraform Validate
+      run: terraform validate
+
+    - name: Terraform Plan
+      run: terraform plan
