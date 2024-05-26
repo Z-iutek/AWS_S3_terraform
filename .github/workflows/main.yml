@@ -15,10 +15,6 @@ jobs:
         image: localstack/localstack
         ports:
           - 4566:4566
-        options: >-
-          --entrypoint=""
-          -e SERVICES=s3
-          -e DEFAULT_REGION=us-east-1
 
     steps:
     - name: Checkout code
